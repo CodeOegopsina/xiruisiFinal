@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ <mapper namespace="com.xiruisi.dao.PayDao">
+    <resultMap id="orderMap" type="com.xiruisi.domain.Order">
+        <id property="id" column="id"/>
+        <association property="address" column="address_id" select="com.xiruisi.dao.GoodsDao.findAddressByAddressId"/>
+        <association property="goods" column="goods_id" select="com.xiruisi.dao.GoodsDao.findGoodsById"/>
+    </resultMap>
+    <insert id="saveOrder" parameterType="order">
+        insert into order_x values (null,#{order_num},#{order_status},#{order_amount},#{paid_amount},#{goods.goods_id},#{buy_counts},#{create_time},null,null)
+    </insert>
+    <update id="addAddress">
+        UPDATE order_x SET address_id = #{address_id} WHERE order_num = #{orderNum}
+    </update>
+    <select id="findOrderByOrderNum" parameterType="String" resultMap="orderMap">
+        select * from order_X where order_num = #{orderNum};
+    </select>
+    <update id="updateOrder">
+        update order_x set paid_time = #{paid_time} ,order_status = #{order_status} where id = #{id}
+    </update>
+    <select id="findAllOrderByAddressId" parameterType="Integer" resultMap="orderMap">
+        select * from order_x where address_id = #{address_id} order by id desc ;
+    </select>
+    <select id="findAllOrderByStatus" parameterType="Integer" resultMap="orderMap">
+        select * from order_x where address_id = #{address_id} and order_status = #{order_status} order by id desc ;
+    </select>
+    <delete id="deleteOrder" parameterType="Integer">
+        delete from order_x where id = #{order_id}
+    </delete>
+    <select id="findOrderById" parameterType="Integer" resultMap="orderMap">
+        select * from order_x where id = #{id}
+    </select>
+</mapper>

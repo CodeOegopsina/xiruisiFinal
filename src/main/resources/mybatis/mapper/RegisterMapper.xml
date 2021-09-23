@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ <mapper namespace="com.xiruisi.dao.RegisterDao">
+    <!--根据用户名查询用户-->
+    <resultMap id="userMap" type="com.xiruisi.domain.User">
+        <association property="address" column="address_id" select="com.xiruisi.dao.GoodsDao.findAddressByAddressId"/>
+    </resultMap>
+    <select id="findUserByUsername" resultMap="userMap" parameterType="String">
+        select * from user where username = #{username};
+    </select>
+    <!--根据邮箱查询用户-->
+    <select id="findUserByEmail" resultType="User" parameterType="String">
+        select * from user where email = #{email};
+    </select>
+    <!--根据电话查询用户-->
+    <select id="findUserByPhone" resultType="User" parameterType="String">
+        select * from user where phone = #{phone};
+    </select>
+    <!--保存用户信息-->
+    <insert id="saveUser" parameterType="User">
+        insert into user values(null,#{username},#{password},#{email},#{phone},null)
+    </insert>
+    <!--根据id查询用户名-->
+    <select id="findUserById" resultType="user" parameterType="Integer">
+        select * from user where user_id = #{user_id};
+    </select>
+    <!--添加收货地址-->
+    <update id="saveAddress" parameterType="address">
+        update user set address_id = #{address_id} where user_id = #{user_id};
+    </update>
+    <!--获取用户总条数-->
+    <select id="getTotalUser" resultType="Integer">
+        select  count(*) from user ;
+    </select>
+    <select id="getUserList" resultMap="userMap">
+        select * from user where 1 = 1
+        <if test="username != '%%'">
+            and username like #{username}
+        </if>
+        limit #{page.startPage},#{page.pageSizes}
+    </select>
+    <delete id="deleteUser" parameterType="List">
+        delete from user where user_id in
+        <foreach collection="list" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

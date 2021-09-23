@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ <mapper namespace="com.xiruisi.dao.GoodsDao">
+
+    <resultMap id="cartMap" type="com.xiruisi.domain.Cart">
+        <id property="cart_id" column="cart_id"/>
+        <association property="user" column="user_id" select="com.xiruisi.dao.RegisterDao.findUserById"/>
+        <association property="goods" column="goods_id" select="com.xiruisi.dao.GoodsDao.findGoodsById"/>
+    </resultMap>
+
+    <select id="getCatList" resultType="cat">
+        select * from cat
+    </select>
+    <insert id="saveGoods" parameterType="goods">
+        insert into goods values (#{goods_id},#{goods_name},#{cat_id},#{image1},#{image2},#{image3},#{image4},#{image5},#{goods_price},#{goods_number},#{goods_introduce})
+    </insert>
+    <select id="getGoodsList" resultType="goods">
+        select * from goods where 1 = 1
+        <if test="queryMap.goods_name != null and queryMap.goods_name != ''">
+            and goods_name like #{queryMap.goods_name}
+        </if>
+        <if test="queryMap.cat_id != 0">
+            and cat_id = #{queryMap.cat_id}
+        </if>
+        limit #{page.startPage},#{page.pageSizes};
+    </select>
+    <select id="findGoodsById" resultType="goods">
+        select * from goods where goods_id = #{goods_id};
+    </select>
+    <select id="findGoodsByCatId" resultType="goods">
+        select * from goods where cat_id = #{cat_id} limit #{page.startPage},#{page.pageSizes}
+    </select>
+    <select id="findCatNameByCatId" parameterType="Integer" resultType="cat">
+        select * from cat where cat_id = #{cat_id}
+    </select>
+    <select id="findGoodsTotal" resultType="Integer" parameterType="Map">
+        select count(*) from goods where 1 = 1
+        <if test="goods_name != null and goods_name != ''">
+            and goods_name like #{goods_name}
+        </if>
+        <if test="cat_id != 0">
+            and cat_id = #{cat_id}
+        </if>
+    </select>
+    <select id="findGoodsTotalByCatId" parameterType="Integer" resultType="Integer">
+        select count(*) from goods where cat_id = #{cat_id} ;
+    </select>
+    <update id="updateGoods" parameterType="goods">
+        update goods set goods_name = #{goods_name},cat_id=#{cat_id},image1=#{image1},image2=#{image2},image3=#{image3},image4=#{image4},image5=#{image5},goods_price=#{goods_price},goods_number=#{goods_number},goods_introduce=#{goods_introduce} where goods_id = #{goods_id};
+    </update>
+    <delete id="deleteGoods" parameterType="List">
+        delete from goods where goods_id in
+        <foreach collection="list" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+    <insert id="addCart">
+        insert into cart (user_id,goods_id) values (#{user_id},#{goods_id});
+    </insert>
+    <select id="findCartById" parameterType="Integer" resultMap="cartMap">
+        select * from cart where goods_id = #{goods_id} and user_id = #{user_id};
+    </select>
+    <update id="updateCartNumber" parameterType="Integer">
+        update cart set number = number + #{count} where goods_id = #{goods_id};
+    </update>
+    <select id="findAllCart" resultMap="cartMap">
+        select * from cart where user_id = #{user_id}
+    </select>
+    <delete id="deleteCart" parameterType="Integer">
+        delete from cart where goods_id = #{goods_id} and user_id = #{user_id};
+    </delete>
+    <update id="updateCart" parameterType="cart">
+        update cart set ischecked = #{isChecked} where cart_id = #{cart_id}
+    </update>
+    <select id="findAllChecked" resultMap="cartMap">
+        select * from cart where ischecked = 1 and user_id = #{user_id} ;
+    </select>
+    <insert id="saveAddress" parameterType="address">
+        insert into address values (null,#{user_id},#{realName},#{address},#{phone});
+    </insert>
+    <select id="findAddressByUserId" parameterType="Integer" resultType="address">
+        select * from address where user_id = #{user_id};
+    </select>
+    <update id="updateAddress" parameterType="address">
+        update address set realName = #{realName}, address = #{address},phone = #{phone} where user_id = #{user_id}
+    </update>
+    <select id="findAddressByAddressId" resultType="address" parameterType="Integer">
+        select * from address where address_id = #{address_id}
+    </select>
+    <select id="findAddressByRealName" resultType="address" parameterType="String">
+        select * from address where realName = #{realName}
+    </select>
+    <!--收藏相关-->
+    <resultMap id="collectMap" type="com.xiruisi.domain.Collect">
+        <association property="user" column="user_id" select="com.xiruisi.dao.RegisterDao.findUserById"/>
+        <association property="goods" column="goods_id" select="com.xiruisi.dao.GoodsDao.findGoodsById"/>
+    </resultMap>
+
+    <select id="findAllCollect" resultMap="collectMap" >
+        select * from collect where user_id = #{user_id} limit #{page.startPage},#{page.pageSizes} ;
+    </select>
+    <insert id="collectGoods" parameterType="Integer">
+        insert into collect values (null,#{user_id},#{goods_id}) ;
+    </insert>
+    <select id="findCollectByGoodsIdAndUserId" parameterType="Integer" resultMap="collectMap">
+        select * from collect where user_id = #{user_id} and goods_id = #{goods_id} ;
+    </select>
+    <delete id="deleteCollect" parameterType="integer">
+        delete from collect where collect_id = #{collect_id} ;
+    </delete>
+    <select id="getTotalCollect" parameterType="Integer" resultType="Integer">
+        select count(*) from collect where user_id = #{user_id} ;
+    </select>
+    <select id="findByGoodsName"  resultType="goods">
+        select * from goods where goods_name like #{goods_name} limit #{page.startPage},#{page.pageSizes} ;
+    </select>
+    <select id="getCountsByGoodsName" parameterType="String" resultType="Integer">
+        select count(*) from goods where goods_name like #{goods_name} ;
+    </select>
+    <select id="getGuessLike" resultType="Integer">
+        select goods_id from recommend;
+    </select>
+    <select id="getImage" resultType="carousel">
+        select * from carousel;
+    </select>
+    <select id="getRecommond" resultType="recommend">
+        select * from recommend ;
+</select>
+</mapper>

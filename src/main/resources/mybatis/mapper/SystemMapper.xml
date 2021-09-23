@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ <mapper namespace="com.xiruisi.dao.SystemDao">
+    <!--添加轮播图-->
+    <insert id="addCarousel" parameterType="String">
+        insert into carousel values (null,#{image}) ;
+    </insert>
+    <delete id="deleteCarousel" parameterType="Integer">
+        delete from carousel where c_id in
+        <foreach collection="list" separator="," open="(" close=")" item="id">
+            #{id}
+        </foreach>
+    </delete>
+    <!--查询byId-->
+    <select id="findCarouselById" parameterType="Integer" resultType="carousel">
+        select * from carousel where c_id = #{id}
+    </select>
+    <update id="updateCarousel" parameterType="carousel">
+        update carousel set c_img = #{c_img} where c_id = #{c_id};
+    </update>
+    <!--查询byId-->
+    <select id="findRecommendById" parameterType="Integer" resultType="recommend">
+        select * from recommend where id = #{id}
+    </select>
+    <update id="updateRecommend" parameterType="recommend">
+        update recommend set goods_id = #{goods_id} where id = #{id};
+    </update>
+    <select id="getOrderCount" resultType="Integer">
+        select count(*) from order_x where order_status = #{order_status}
+        <if test="order_num != null and order_num != ''">
+            and order_num = #{order_num}
+        </if>
+        <if test="address_id != 0">
+            and address_id = #{address_id}
+        </if>
+    </select>
+    <resultMap id="orderMap" type="com.xiruisi.domain.Order">
+        <id property="id" column="id"/>
+        <association property="address" column="address_id" select="com.xiruisi.dao.GoodsDao.findAddressByAddressId"/>
+        <association property="goods" column="goods_id" select="com.xiruisi.dao.GoodsDao.findGoodsById"/>
+    </resultMap>
+    <select id="getOrderList" resultMap="orderMap">
+        select * from order_x where order_status = #{queryMap.order_status}
+        <if test="queryMap.order_num != null and queryMap.order_num != ''">
+            and order_num = #{queryMap.order_num}
+        </if>
+        <if test="queryMap.address_id != 0">
+            and address_id = #{queryMap.address_id}
+        </if>
+        limit #{page.startPage},#{page.pageSizes}
+    </select>
+    <delete id="deleteOrder" parameterType="Integer">
+        delete from order_x where id in
+        <foreach collection="list" separator="," open="(" close=")" item="id">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
